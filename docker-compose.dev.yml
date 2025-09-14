@@ -1,0 +1,74 @@
+# Docker Compose para desarrollo local
+version: '3.8'
+
+services:
+  # Orchestration Service (NestJS) - Desarrollo
+  orchestration-service:
+    build:
+      context: ./orchestration_service
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - AI_SERVICE_URL=http://ai-service:8000
+      - EDGE_SERVICE_URL=http://edge-agent:8001
+      - PORT=3000
+    depends_on:
+      - ai-service
+      - redis
+    networks:
+      - hybrid-ai-network
+    volumes:
+      - ./orchestration_service/src:/app/src
+      - /app/node_modules
+    command: npm run start:dev
+
+  # AI Service (FastAPI) - Desarrollo
+  ai-service:
+    build:
+      context: ./ai_service
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app/src
+      - LOG_LEVEL=DEBUG
+      - MAX_WORKERS=2
+    networks:
+      - hybrid-ai-network
+    volumes:
+      - ./ai_service/src:/app/src
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Edge Agent (FastAPI) - Desarrollo
+  edge-agent:
+    build:
+      context: ./edge_agent
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      - PYTHONPATH=/app/src
+      - LOG_LEVEL=DEBUG
+      - EDGE_MODE=true
+    networks:
+      - hybrid-ai-network
+    volumes:
+      - ./edge_agent/src:/app/src
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
+    profiles:
+      - edge
+
+  # Redis para desarrollo
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - hybrid-ai-network
+    command: redis-server --appendonly yes
+
+networks:
+  hybrid-ai-network:
+    driver: bridge

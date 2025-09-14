@@ -1,0 +1,31 @@
+[project]
+name = "edge-agent"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "fchayle_meli",email = "facundo.chayle@mercadolibre.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+]
+
+[tool.poetry]
+name = "edge-agent"
+version = "0.1.0"
+description = "Microservicio de inferencia en el borde (Edge)"
+authors = ["Facundo Chayle <facundo.chayle@mercadolibre.com>"]
+packages = [{ include = "app", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.116.1"
+uvicorn = "^0.35.0"
+pydantic = "^2.11.7"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.1"
+
+[build-system]
+requires = ["poetry-core>=2.0.0"]
+build-backend = "poetry.core.masonry.api"
